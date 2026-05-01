@@ -43,8 +43,18 @@ RUN curl -sSfO https://downloads.1password.com/linux/keys/1password.asc \
  && apt-get install -y --no-install-recommends 1password-cli \
  && rm -rf /var/lib/apt/lists/* 1password.asc
 
-# himalaya for email reading (Sancho needs this)
-RUN curl -L https://github.com/pimalaya/himalaya/releases/download/v1.1.0/himalaya-linux.tar.gz \
+# himalaya for email reading (Sancho needs this).
+# v1.1.0 publishes per-arch assets: himalaya.<arch>-<os>.tgz with the
+# binary at the root. Detect the arch at build time so this works on
+# both linux/amd64 and linux/arm64 buildx targets.
+RUN ARCH="$(dpkg --print-architecture)" \
+ && case "$ARCH" in \
+      amd64) HIMALAYA_ARCH="x86_64-linux" ;; \
+      arm64) HIMALAYA_ARCH="aarch64-linux" ;; \
+      armhf) HIMALAYA_ARCH="armv7l-linux" ;; \
+      *) echo "unsupported arch: $ARCH" >&2; exit 1 ;; \
+    esac \
+ && curl -fsSL "https://github.com/pimalaya/himalaya/releases/download/v1.1.0/himalaya.${HIMALAYA_ARCH}.tgz" \
       | tar -xz -C /usr/local/bin himalaya \
  && chmod +x /usr/local/bin/himalaya
 

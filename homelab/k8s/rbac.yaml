@@ -1,0 +1,107 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sancho-ops
+  namespace: sancho
+
+---
+# Sancho's own namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: sancho-self
+  namespace: sancho
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "pods/exec", "configmaps", "secrets", "events"]
+    verbs: ["get", "list", "watch", "create", "patch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list", "watch", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sancho-self
+  namespace: sancho
+subjects:
+  - kind: ServiceAccount
+    name: sancho-ops
+    namespace: sancho
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: sancho-self
+
+---
+# Cluster-wide read-only — Sancho can see "is everything OK" but
+# does NOT operate on it. Frick handles cluster ops.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sancho-cluster-readonly
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "nodes", "namespaces", "events"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "statefulsets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["argoproj.io"]
+    resources: ["applications", "applicationsets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["nodes", "pods"]
+    verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sancho-cluster-readonly
+subjects:
+  - kind: ServiceAccount
+    name: sancho-ops
+    namespace: sancho
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: sancho-cluster-readonly
+
+---
+# Home Assistant access (Sancho needs this for his
+# conversation.sancho entity and for "remind me" → scene mappings)
+# Note: HA itself authenticates via the HOMEASSISTANT_TOKEN env;
+# Kubernetes RBAC isn't relevant for HA's REST API. This is here
+# only to allow Sancho to read the HA pod's status for health
+# checks during heartbeat.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: sancho-ha-readonly
+  namespace: security
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services"]
+    resourceNames: ["homeassistant"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sancho-ha-readonly
+  namespace: security
+subjects:
+  - kind: ServiceAccount
+    name: sancho-ops
+    namespace: sancho
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: sancho-ha-readonly

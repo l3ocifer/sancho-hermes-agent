@@ -1,0 +1,37 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: sancho
+  namespace: sancho
+spec:
+  entryPoints: [websecure]
+  routes:
+    - match: Host(`sancho.leopaska.xyz`)
+      kind: Rule
+      services:
+        - name: sancho
+          namespace: sancho
+          port: 3001
+      middlewares:
+        - name: authelia
+          namespace: security
+  tls:
+    certResolver: letsencrypt-prod
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: sancho-metrics
+  namespace: sancho
+  labels:
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sancho
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics

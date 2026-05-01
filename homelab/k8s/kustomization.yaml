@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Sancho — Hermes-Agent personal-life agent. Floats across the
+# cluster. Lives in `agents-shared` alongside Vetinari, Frack, the
+# graph PVCs, and syncthing-graphs.
+
+namespace: agents-shared
+
+resources:
+  - pvc.yaml
+  - rbac.yaml
+  - service.yaml
+  - ingressroute.yaml
+  - deployment.yaml
+
+configMapGenerator:
+  - name: sancho-persona
+    files:
+      - SOUL.md=../config/SOUL.md
+      - TOOLS.md=../config/TOOLS.md
+      - AGENTS.md=../shared/openclaw-configs/shared/AGENTS.md
+      - HANDOFF.md=../shared/openclaw-configs/shared/HANDOFF.md
+      - KILLSWITCH.md=../shared/openclaw-configs/shared/KILLSWITCH.md
+      - USER.md=../shared/openclaw-configs/shared/USER.md
+  - name: sancho-hermes-config
+    files:
+      - config.toml=../config/hermes.toml
+
+generatorOptions:
+  disableNameSuffixHash: false
+
+commonLabels:
+  app.kubernetes.io/name: sancho
+  app.kubernetes.io/part-of: agents
+  app.kubernetes.io/managed-by: argocd

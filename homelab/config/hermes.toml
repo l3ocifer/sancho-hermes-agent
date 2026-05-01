@@ -1,0 +1,212 @@
+# Hermes Agent — Sancho config
+# Mounted at /home/hermes/.hermes/config.toml in the pod via ConfigMap.
+# See https://hermes-agent.nousresearch.com/docs for full schema.
+
+[agent]
+name = "Sancho"
+id = "sancho"
+persona_file = "/home/hermes/.hermes/workspace/SOUL.md"
+tools_file = "/home/hermes/.hermes/workspace/TOOLS.md"
+agents_file = "/home/hermes/.hermes/workspace/AGENTS.md"
+user_file = "/home/hermes/.hermes/workspace/USER.md"
+killswitch_file = "/home/hermes/.hermes/workspace/KILLSWITCH.md"
+handoff_file = "/home/hermes/.hermes/workspace/HANDOFF.md"
+
+[models]
+default = "litellm/chat"
+fallbacks = ["litellm/long", "ollama-macbook/qwen2.5"]
+
+  [models.providers.litellm]
+  type = "openai_compatible"
+  base_url = "http://litellm.ai.svc.cluster.local:4000/v1"
+  api_key_env = "LITELLM_API_KEY"
+  models = ["chat", "long", "code", "embed", "rerank"]
+
+  [models.providers.ollama-macbook]
+  type = "openai_compatible"
+  base_url = "http://leos-macbook.tail-scale-net:11434/v1"
+  api_key = "ollama-local"
+  models = ["qwen2.5:72b-instruct-q3_K_M", "qwen3-coder:30b"]
+  optional = true  # don't fail if MacBook is offline
+
+[memory]
+backend = "hybrid"
+
+  [memory.sqlite]
+  path = "/home/hermes/.hermes/memory.db"
+  fts5 = true
+
+  [memory.postgres]
+  url_env = "DATABASE_URL"  # postgres://hermes_sancho@homelab-pg-rw.databases.svc.cluster.local:5432/hermes_sancho
+  vector_extension = "pgvector"
+
+  [memory.logseq]
+  enabled = true
+  graphs = [
+    { name = "sancho", path = "/data/graphs/sancho", access = "rw" },
+    { name = "leo", path = "/data/graphs/leo", access = "r+w-restricted",
+      writable_paths = ["pages/world/calendar-context.md",
+                        "pages/world/people.md",
+                        "pages/world/open-loops.md",
+                        "pages/agent-contributions/sancho/"] },
+    { name = "frick", path = "/data/graphs/frick", access = "r" },
+    { name = "frack", path = "/data/graphs/frack", access = "r" },
+  ]
+  block_attribution = { agent = "sancho", auto = true }
+
+  [memory.embeddings]
+  provider = "litellm"
+  model = "embed"  # routed by litellm to tei-embed
+  dim = 1024
+
+  [memory.search]
+  hybrid = true
+  vector_weight = 0.7
+  text_weight = 0.3
+
+[gateway]
+enabled = true
+bind = "0.0.0.0"
+port = 3001
+
+  [gateway.matrix]
+  enabled = true
+  homeserver = "https://conduit.leopaska.xyz"
+  user_id = "@sancho:leopaska.xyz"
+  access_token_env = "MATRIX_ACCESS_TOKEN"
+  default_room = "!homelab:leopaska.xyz"
+
+  [gateway.telegram]
+  enabled = true
+  bot_token_env = "TELEGRAM_BOT_TOKEN"
+  prefix = "/sancho"  # routed via shared bot — only respond to messages prefixed /sancho
+
+  [gateway.imessage]
+  # Custom Hermes plugin pointing at the in-cluster BlueBubbles proxy
+  enabled = true
+  type = "bluebubbles-proxy"
+  base_url = "http://bluebubbles-proxy.agents-shared.svc.cluster.local:8080"
+  api_key_env = "BLUEBUBBLES_API_KEY"
+  webhook_path = "/imessage/sancho"  # proxy forwards inbound iMessages here
+
+  [gateway.ntfy]
+  enabled = true
+  outbound_only = true
+  topic_url = "https://ntfy.leopaska.xyz/sancho"
+  bearer_token_env = "NTFY_TOKEN"
+
+  [gateway.homeassistant]
+  enabled = true
+  base_url = "http://homeassistant.security.svc.cluster.local:8123"
+  token_env = "HOMEASSISTANT_TOKEN"
+  conversation_entity = "conversation.sancho"
+
+[mcp]
+enabled = true
+
+  [[mcp.servers]]
+  name = "homelab-devops"
+  url = "http://mcp-server.ai.svc.cluster.local:8890"
+  # Tool filter — Sancho gets read-only ops, no write tools
+  allowed_tools = [
+    "list_docker_containers", "list_k8s_pods",
+    "list_databases", "service_health_check",
+    "ha_*",  # all HA tools
+    "weather_*", "find_places", "query_overpass",
+    "search_memory", "create_memory",
+  ]
+
+[skills]
+load_from = ["/home/hermes/.hermes/skills"]
+auto_create = true  # let Hermes self-improve, append to /skills
+
+[security]
+require_confirmation = [
+  "send_email", "send_imessage", "send_sms",
+  "calendar_create_external", "calendar_invite_send",
+  "purchase_*", "subscription_*",
+  "delete_*", "git_push",
+  "ha_security_*", "ha_lock_*",
+]
+sandbox_python = true  # all python tool calls go in a subprocess sandbox
+sandbox_shell = "docker"  # shell tool calls go in an ephemeral container
+
+[quiet_hours]
+enabled = true
+window = "23:00-07:00"
+timezone = "America/New_York"
+suppress_outbound = ["imessage", "ntfy", "telegram"]
+allow_outbound_on_p0 = true
+allow_inbound_always = true
+
+[hard_kill]
+sentinel_path = "/data/HARDSTOP-SANCHO"
+poll_interval_seconds = 30
+on_trigger = "graceful_exit"
+
+[heartbeat]
+enabled = true
+interval = "30m"
+offset_minutes = 20  # :20 and :50 to avoid Frick (:00 :30) and Frack (:10 :40)
+checks = ["calendar_conflicts", "deadline_approach", "followup_due"]
+notify_on = ["P0", "P1"]
+
+[cron]
+
+  [[cron.tasks]]
+  name = "morning-briefing"
+  schedule = "0 7 * * *"
+  prompt = """
+  Generate the daily morning briefing for Leo.
+  Read pages/world/calendar-context.md (refreshed at 06:00).
+  Read pages/world/open-loops.md.
+  Pull weather for Leo's current location.
+  Pull P1+ unread emails from himalaya draft folder.
+  Format as a single iMessage (max 4 paragraphs).
+  Send to leo via iMessage AND post to #homelab Matrix.
+  """
+  delivery = ["imessage", "matrix"]
+
+  [[cron.tasks]]
+  name = "evening-recap"
+  schedule = "0 18 * * *"
+  prompt = """
+  Generate the evening recap.
+  Today's completed calendar items, what got done, what's open.
+  Tomorrow's first 3 calendar items as a heads-up.
+  Format as a brief iMessage (max 3 paragraphs).
+  """
+  delivery = ["imessage"]
+
+  [[cron.tasks]]
+  name = "memory-consolidate"
+  schedule = "50 3 * * *"  # 03:50 — staggered behind Frick (03:00) and Frack (03:30)
+  prompt = "Run memory consolidation on yesterday's journal. Distill to pages/ai-memory/Sancho/decisions.md."
+  delivery = []  # silent
+
+  [[cron.tasks]]
+  name = "calendar-refresh"
+  schedule = "0 6 * * *"
+  prompt = "Pull next 24h of calendar from CalDAV. Write summary to pages/world/calendar-context.md."
+  delivery = []
+
+  [[cron.tasks]]
+  name = "inbox-triage"
+  schedule = "30 6 * * *"
+  prompt = "Triage overnight inbox. Tag P0/P1/P2. Draft replies for high-priority items (drafts only, no send)."
+  delivery = []
+
+  [[cron.tasks]]
+  name = "midday-check"
+  schedule = "0 12 * * *"
+  prompt = "Mid-day check: any unanswered iMessages from this morning? Calendar conflicts in the next 4h? Push if anything urgent."
+  delivery = ["ntfy_if_p1"]
+
+[logging]
+level = "info"
+format = "json"
+output = "stdout"  # captured by Vector → Loki
+
+[telemetry]
+prometheus_metrics = true
+metrics_port = 9100

@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sancho
+  namespace: sancho
+  labels:
+    app.kubernetes.io/name: sancho
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: sancho
+  ports:
+    - name: gateway
+      port: 3001
+      targetPort: gateway
+      protocol: TCP
+    - name: metrics
+      port: 9100
+      targetPort: metrics
+      protocol: TCP

@@ -1,0 +1,19 @@
+---
+# Hermes runtime state: SQLite FTS5 sessions, skills cache, memory.
+# RWO Longhorn volume — single replica per spec, durable across pod
+# reschedules. Sancho's deployment uses Recreate strategy so this PVC
+# is owned by exactly one pod at a time.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sancho-state
+  namespace: agents-shared
+  labels:
+    app.kubernetes.io/name: sancho
+    app.kubernetes.io/component: state
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: longhorn-single
+  resources:
+    requests:
+      storage: 10Gi

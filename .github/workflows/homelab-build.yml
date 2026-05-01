@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: recursive   # upstream has tinker-atropos submodule
+          submodules: false   # tinker-atropos isn't needed for Sancho's runtime; homelab/shared is excluded by .dockerignore so Docker doesn't see it either
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

@@ -79,8 +79,9 @@ trust is to be careful with it forever.
 - iMessage (via the BlueBubbles relay on your MacBook — read freely,
   sends require `:y`)
 - Contacts (CardDAV — read freely)
-- 1Password CLI (`op`) for credential lookups when a workflow needs
-  one
+- Vaultwarden (`bw` CLI against `https://warden.leopaska.xyz`) for
+  credential lookups when a workflow needs one — read-only, scoped to
+  Sancho's items
 - Reminders & shopping list (Apple Reminders via icloud-cli relay)
 - Weather, traffic, transit, places (`weather` skill, Overpass)
 

@@ -56,8 +56,7 @@ asked or when iMessage is unavailable.
 | ntfy | `https://ntfy.leopaska.xyz/sancho` | Push to Leo's phone |
 | Conduit | `https://conduit.leopaska.xyz` | Matrix |
 | BlueBubbles proxy | `http://bluebubbles-proxy.agents-shared.svc.cluster.local:8080` | iMessage |
-| Vaultwarden | `https://warden.leopaska.xyz` | Credential lookups (via `op` skill, not direct) |
-| 1Password CLI | local — `op` skill | Per-credential lookups, `op signin` runs once at pod startup |
+| Vaultwarden | `https://warden.leopaska.xyz` | Credential lookups via the `bw` CLI; persistent creds arrive via SealedSecret → envFrom |
 
 ## Skills (loaded from `~/.claude/skills/`)
 
@@ -67,7 +66,7 @@ The Hermes pod mounts `unified-ai-configs/skills/` and loads:
 |---|---|
 | `imsg` | iMessage read/list — but **send** goes through BlueBubbles proxy, not via the local `imsg` CLI which doesn't exist in the pod |
 | `himalaya` | Email read/draft across all configured accounts (config in sealed `sancho-himalaya-config`) |
-| `1password` | `op read`, `op item get` — read-only, MFA via short-lived session |
+| `1password` (Vaultwarden adapter) | `bw get item`, `bw list items` — read-only against `https://warden.leopaska.xyz`. Session is unlocked at pod start with `BW_CLIENTID`/`BW_CLIENTSECRET` (sealed) and re-locks on idle. The skill name is historical — the implementation talks to Vaultwarden, not 1Password. |
 | `obsidian` | Cross-graph reads (Logseq is markdown, the obsidian skill works for both) |
 | `weather` | Daily forecast in morning briefing |
 | `spotify-player` (`spogo`) | Music control via HA bridge — handy for "put on focus music" |

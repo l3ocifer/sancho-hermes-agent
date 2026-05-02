@@ -76,6 +76,7 @@ COPY . .
 RUN uv pip install --system --no-cache "." \
       pgvector \
       psycopg2-binary \
+      "mautrix[encryption]" \
       caldav \
       vobject
 

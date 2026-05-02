@@ -18,7 +18,7 @@ fallbacks = ["litellm/long", "ollama-macbook/qwen2.5"]
 
   [models.providers.litellm]
   type = "openai_compatible"
-  base_url = "http://litellm.ai.svc.cluster.local:4000/v1"
+  base_url = "http://litellm.inference.svc.cluster.local:4000/v1"
   api_key_env = "LITELLM_API_KEY"
   models = ["chat", "long", "code", "embed", "rerank"]
 
@@ -106,7 +106,7 @@ enabled = true
 
   [[mcp.servers]]
   name = "homelab-devops"
-  url = "http://mcp-server.ai.svc.cluster.local:8890"
+  url = "http://external-mcp.ironclaw.svc.cluster.local:8890"
   # Tool filter — Sancho gets read-only ops, no write tools
   allowed_tools = [
     "list_docker_containers", "list_k8s_pods",

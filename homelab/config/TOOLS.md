@@ -50,8 +50,8 @@ asked or when iMessage is unavailable.
 
 | Service | URL (in-cluster) | Why |
 |---|---|---|
-| LiteLLM | `http://litellm.ai.svc.cluster.local:4000/v1` | All inference |
-| MCP devops | `http://mcp-server.ai.svc.cluster.local:8890` | Read-only kubectl, prom queries |
+| LiteLLM | `http://litellm.inference.svc.cluster.local:4000/v1` | All inference |
+| MCP devops | `http://external-mcp.ironclaw.svc.cluster.local:8890` | Read-only kubectl, prom queries |
 | Postgres | `postgres://hermes_sancho@homelab-pg-rw.databases.svc.cluster.local:5432/hermes_sancho` | Memory back-end (sealed in `sancho-secrets`) |
 | ntfy | `https://ntfy.leopaska.xyz/sancho` | Push to Leo's phone |
 | Conduit | `https://conduit.leopaska.xyz` | Matrix |

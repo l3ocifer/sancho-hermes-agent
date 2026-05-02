@@ -44,11 +44,7 @@ backend = "hybrid"
   enabled = true
   graphs = [
     { name = "sancho", path = "/data/graphs/sancho", access = "rw" },
-    { name = "leo", path = "/data/graphs/leo", access = "r+w-restricted",
-      writable_paths = ["pages/world/calendar-context.md",
-                        "pages/world/people.md",
-                        "pages/world/open-loops.md",
-                        "pages/agent-contributions/sancho/"] },
+    { name = "leo", path = "/data/graphs/leo", access = "r+w-restricted", writable_paths = ["pages/world/calendar-context.md", "pages/world/people.md", "pages/world/open-loops.md", "pages/agent-contributions/sancho/"] },
     { name = "frick", path = "/data/graphs/frick", access = "r" },
     { name = "frack", path = "/data/graphs/frack", access = "r" },
   ]
@@ -217,6 +213,17 @@ notify_on = ["P0", "P1"]
   schedule = "0 12 * * *"
   prompt = "Mid-day check: any unanswered iMessages from this morning? Calendar conflicts in the next 4h? Push if anything urgent."
   delivery = ["ntfy_if_p1"]
+
+  [[cron.tasks]]
+  name = "hourly-user-checkin"
+  schedule = "42 10-22 * * *"
+  prompt = """
+  Send Leo a concise hourly check-in.
+  Review calendar context, open loops, recent inbound messages, and anything Sancho should keep Leo aware of.
+  Keep it lightweight: at most 2 short paragraphs, with one direct question only if Leo input would unblock something.
+  This check-in is intentionally user-facing; do not suppress it with [SILENT].
+  """
+  delivery = ["matrix"]
 
 [logging]
 level = "info"

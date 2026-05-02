@@ -142,6 +142,22 @@ allow_inbound_always = true
 [hard_kill]
 sentinel_path = "/data/HARDSTOP-SANCHO"
 poll_interval_seconds = 30
+
+# ─── Fleet event bus ─────────────────────────────────────────────────
+# Durable async A2A backbone shared by all seven agents. Backed by
+# Postgres LISTEN/NOTIFY on the `fleet` database (schema in
+# scripts/agents/sql/fleet-schema.sql in the homelab repo, applied by
+# argocd/apps/_postgres/fleet-schema-job.yaml).
+# Connection string sealed in sancho-secrets as FLEET_DATABASE_URL.
+[fleet]
+enabled = true
+agent_id = "sancho"
+database_url_env = "FLEET_DATABASE_URL"
+notify_channel = "fleet_events_new"
+# Sancho is the personal-life agent — wakes for P0s, broadcasts, and
+# explicit pings, plus any health/family/calendar event regardless of
+# target.
+inbound_predicate = "severity = 'p0' OR target IS NULL OR target = 'sancho' OR kind LIKE 'personal.%' OR kind LIKE 'health.%' OR kind LIKE 'family.%'"
 on_trigger = "graceful_exit"
 
 [heartbeat]

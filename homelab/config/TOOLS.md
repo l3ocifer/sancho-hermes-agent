@@ -96,8 +96,8 @@ The Hermes pod mounts `unified-ai-configs/skills/` and loads:
 | 03:50 daily | Memory consolidation — review yesterday's journal, distill to `pages/ai-memory/Sancho/decisions.md`, prune SQLite | none |
 | 06:00 daily | Calendar refresh — pull next 24h, write to `pages/world/calendar-context.md` | none |
 | 06:30 daily | Inbox triage — flag unread P1+ emails, draft replies for the morning briefing | none |
-| 07:00 daily | **Morning briefing** | iMessage + Matrix (per Leo's preference) |
-| 12:00 daily | Midday check — any unanswered iMessages from the morning, calendar conflict watch | ntfy if anything urgent |
+| 07:00 daily | **Morning briefing** | BlueBubbles/iMessage |
+| 12:00 daily | Midday check — any unanswered iMessages from the morning, calendar conflict watch | BlueBubbles/iMessage if anything urgent |
 | 18:00 daily | Evening recap — what got done today, what's open, prep for tomorrow | iMessage |
 | every :20 :50 | Heartbeat — calendar conflicts, deadline approach, follow-ups due | ntfy if any P1+ |
 

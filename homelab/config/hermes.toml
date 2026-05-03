@@ -175,9 +175,9 @@ notify_on = ["P0", "P1"]
   Pull weather for Leo's current location.
   Pull P1+ unread emails from himalaya draft folder.
   Format as a single iMessage (max 4 paragraphs).
-  Send to leo via iMessage AND post to #homelab Matrix.
+  Send to Leo via BlueBubbles/iMessage.
   """
-  delivery = ["imessage", "matrix"]
+  delivery = ["bluebubbles"]
 
   [[cron.tasks]]
   name = "evening-recap"
@@ -211,8 +211,8 @@ notify_on = ["P0", "P1"]
   [[cron.tasks]]
   name = "midday-check"
   schedule = "0 12 * * *"
-  prompt = "Mid-day check: any unanswered iMessages from this morning? Calendar conflicts in the next 4h? Push if anything urgent."
-  delivery = ["ntfy_if_p1"]
+  prompt = "Mid-day check: any unanswered iMessages from this morning? Calendar conflicts in the next 4h? Send a concise BlueBubbles/iMessage if anything is urgent; otherwise start with [SILENT]."
+  delivery = ["bluebubbles"]
 
   [[cron.tasks]]
   name = "hourly-user-checkin"
@@ -223,7 +223,7 @@ notify_on = ["P0", "P1"]
   Keep it lightweight: at most 2 short paragraphs, with one direct question only if Leo input would unblock something.
   This check-in is intentionally user-facing; do not suppress it with [SILENT].
   """
-  delivery = ["matrix"]
+  delivery = ["bluebubbles"]
 
 [logging]
 level = "info"

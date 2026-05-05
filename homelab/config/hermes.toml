@@ -164,10 +164,23 @@ checks = ["calendar_conflicts", "deadline_approach", "followup_due"]
 notify_on = ["P0", "P1"]
 
 [cron]
+# These [[cron.tasks]] entries are the SOURCE OF TRUTH for Sancho's
+# scheduled work. They are reconciled into Hermes' jobs.json by the
+# `sancho-cron-reconcile` Kubernetes Job (homelab/k8s/cron-reconcile-job.yaml)
+# which calls Hermes' /api/jobs HTTP API on each ArgoCD sync.
+#
+# Per-task `model` field (optional):
+#   - omit / null   → use the gateway default (long)
+#   - "frontier"    → llamacpp-blade-frontier (slow, deepest reasoning)
+#   - "long"        → vllm-long (262K window, mid quality)
+#   - "chat"        → vllm-chat (fast, 20K window)
+# Pin "frontier" only on tasks where reasoning quality matters more
+# than latency AND the prompt+context fit in 64K tokens.
 
   [[cron.tasks]]
   name = "morning-briefing"
   schedule = "0 7 * * *"
+  model = "frontier"  # daily synthesis; reasoning quality matters
   prompt = """
   Generate the daily morning briefing for Leo.
   Read pages/world/calendar-context.md (refreshed at 06:00).
@@ -182,41 +195,47 @@ notify_on = ["P0", "P1"]
   [[cron.tasks]]
   name = "evening-recap"
   schedule = "0 18 * * *"
+  model = "frontier"  # daily synthesis
   prompt = """
   Generate the evening recap.
   Today's completed calendar items, what got done, what's open.
   Tomorrow's first 3 calendar items as a heads-up.
   Format as a brief iMessage (max 3 paragraphs).
   """
-  delivery = ["imessage"]
+  delivery = ["bluebubbles"]
 
   [[cron.tasks]]
   name = "memory-consolidate"
   schedule = "50 3 * * *"  # 03:50 — staggered behind Frick (03:00) and Frack (03:30)
+  model = "frontier"  # deep nightly distillation; quality > latency
   prompt = "Run memory consolidation on yesterday's journal. Distill to pages/ai-memory/Sancho/decisions.md."
   delivery = []  # silent
 
   [[cron.tasks]]
   name = "calendar-refresh"
   schedule = "0 6 * * *"
+  # default model — cheap CalDAV fetch, no reasoning required.
   prompt = "Pull next 24h of calendar from CalDAV. Write summary to pages/world/calendar-context.md."
   delivery = []
 
   [[cron.tasks]]
   name = "inbox-triage"
   schedule = "30 6 * * *"
+  model = "frontier"  # drafts customer-facing replies; quality matters
   prompt = "Triage overnight inbox. Tag P0/P1/P2. Draft replies for high-priority items (drafts only, no send)."
   delivery = []
 
   [[cron.tasks]]
   name = "midday-check"
   schedule = "0 12 * * *"
+  # default model — light status check.
   prompt = "Mid-day check: any unanswered iMessages from this morning? Calendar conflicts in the next 4h? Send a concise BlueBubbles/iMessage if anything is urgent; otherwise start with [SILENT]."
   delivery = ["bluebubbles"]
 
   [[cron.tasks]]
   name = "hourly-user-checkin"
   schedule = "42 10-22 * * *"
+  # default model — frequent lightweight pings, low stakes.
   prompt = """
   Send Leo a concise hourly check-in.
   Review calendar context, open loops, recent inbound messages, and anything Sancho should keep Leo aware of.

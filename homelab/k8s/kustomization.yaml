@@ -13,6 +13,7 @@ resources:
   - service.yaml
   - ingressroute.yaml
   - deployment.yaml
+  - cron-reconcile-job.yaml
 
 configMapGenerator:
   - name: sancho-persona

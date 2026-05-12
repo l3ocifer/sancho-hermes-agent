@@ -36,6 +36,10 @@ spec:
                     - { key: app.kubernetes.io/name, operator: In, values: [frick] }
                 topologyKey: kubernetes.io/hostname
         nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - { key: kubernetes.io/hostname, operator: In, values: [alef, thebeast, blade] }
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 50
               preference:

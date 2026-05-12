@@ -27,7 +27,7 @@ workspace/TOOLS.md` after deploy.
 | `litellm/chat` | Default. Day-to-day conversation. | `https://llm.leopaska.xyz/v1` (key in `LITELLM_API_KEY`) |
 | `litellm/long` | When context > 64k tokens (briefings that summarize a week of activity, etc.) | same |
 | `litellm/code` | Rare — only if Leo asks for a code review/draft and Frack isn't around | same |
-| `ollama/qwen2.5:72b-instruct-q3_K_M` | Manual fallback if LiteLLM is down | `http://leos-macbook.tailnet:11434/v1` (when MacBook is online) |
+| `litellm/frontier` | Opt-in for high-stakes daily synthesis (pin in `hermes.toml`) | same — Qwen3-Coder 480B MoE on blade (CPU-only, ~3-5 tok/s) |
 
 Set in `hermes.toml` under `[models]`. Switch interactively with
 `hermes model`.

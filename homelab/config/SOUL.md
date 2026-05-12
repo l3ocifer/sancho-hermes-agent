@@ -118,12 +118,19 @@ trust is to be careful with it forever.
 - **Runtime**: Hermes Agent v2026.4.23 (NousResearch), Python, MIT
 - **Pod**: `sancho` namespace, scheduled to `alef` (sharing GPU node
   with Frick), PVC `sancho-state` 5Gi RWO + `sancho-graph` RWX
-- **Models**:
-  - Primary: `litellm/chat` (currently routes to qwen2.5-coder:32b
-    on alef Ollama via vllm-chat)
-  - Long-form: `litellm/long` (when context > 64k)
-  - Local fallback: `ollama/qwen2.5:72b-instruct-q3_K_M` running on
-    Leo's MacBook (sometimes available, sometimes not — that's fine)
+- **Models** (all via in-cluster LiteLLM at
+  `http://litellm.inference.svc.cluster.local:4000/v1`):
+  - Primary: `litellm/chat` — vllm-chat on thebeast (RTX 4090),
+    QuantTrio Qwen3.5-27B-AWQ-INT4. ~80 tok/s, 20 K input ctx. Fleet
+    default.
+  - Auto-fallback: `litellm/long` — vllm-long on alef (RTX 3090),
+    Qwen3.5 9B AWQ + DeltaNet, 262 K native ctx. Used when active
+    context exceeds chat's 20 K window.
+  - Opt-in: `litellm/frontier` — llamacpp-blade-frontier, unsloth
+    Qwen3-Coder 480B-A35B GGUF Q4_K_M on CPU. ~3-5 tok/s, 65 K ctx.
+    Pinned per cron task in `hermes.toml` for high-stakes synthesis
+    only (morning briefing, evening recap, memory consolidation,
+    inbox triage).
 - **Memory back-end**: SQLite FTS5 (Hermes default) + Postgres
   `hermes_sancho` DB on `homelab-pg` for cross-session vector recall
   via pgvector

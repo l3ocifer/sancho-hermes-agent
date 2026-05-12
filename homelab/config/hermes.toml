@@ -13,21 +13,17 @@ killswitch_file = "/home/hermes/.hermes/workspace/KILLSWITCH.md"
 handoff_file = "/home/hermes/.hermes/workspace/HANDOFF.md"
 
 [models]
+# Fleet default is `chat` (vllm-chat / Qwen3.5 27B AWQ on thebeast).
+# `long` and `frontier` are opt-in per-task; do not auto-fallback to
+# `long` because a wedged long backend can hang normal agent work.
 default = "litellm/chat"
-fallbacks = ["litellm/long", "ollama-macbook/qwen2.5"]
+fallbacks = []
 
   [models.providers.litellm]
   type = "openai_compatible"
   base_url = "http://litellm.inference.svc.cluster.local:4000/v1"
   api_key_env = "LITELLM_API_KEY"
-  models = ["chat", "long", "code", "embed", "rerank"]
-
-  [models.providers.ollama-macbook]
-  type = "openai_compatible"
-  base_url = "http://leos-macbook.tail-scale-net:11434/v1"
-  api_key = "ollama-local"
-  models = ["qwen2.5:72b-instruct-q3_K_M", "qwen3-coder:30b"]
-  optional = true  # don't fail if MacBook is offline
+  models = ["chat", "long", "frontier", "embed", "rerank"]
 
 [memory]
 backend = "hybrid"

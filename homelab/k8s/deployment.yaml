@@ -79,6 +79,8 @@ spec:
             - { name: MATRIX_USER_ID, value: "@sancho:leopaska.xyz" }
             - { name: MATRIX_HOME_ROOM, value: "!homelab:leopaska.xyz" }
             - { name: BLUEBUBBLES_PROXY_URL, value: "http://bluebubbles-proxy.agents-shared.svc.cluster.local:8080" }
+            - { name: AGENT_TOOL_SERVICE_URL, value: "http://agent-tool-service.agents-shared.svc.cluster.local:8080" }
+            - { name: SEARXNG_URL, value: "http://searxng.agents-shared.svc.cluster.local:8080" }
             # Hermes' BlueBubblesAdapter.connect() (gateway/platforms/bluebubbles.py)
             # only honours BLUEBUBBLES_SERVER_URL + BLUEBUBBLES_PASSWORD — the
             # proxy-mode envs above are read by gateway/config.py to register

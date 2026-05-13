@@ -23,7 +23,14 @@ fallbacks = []
   type = "openai_compatible"
   base_url = "http://litellm.inference.svc.cluster.local:4000/v1"
   api_key_env = "LITELLM_API_KEY"
-  models = ["chat", "long", "frontier", "embed", "rerank"]
+  # claude-sonnet-max + claude-opus-max route through the household
+  # claude-bridge service (homelab argocd/apps/_inference/55-claude-bridge.yaml).
+  # Sancho is tier-7 of seven (6% weekly share) — reserve for the
+  # morning briefing only; everything else stays on local models.
+  # On bridge 429, LiteLLM cascades sonnet→chat→frontier so cron always
+  # delivers something to Leo's iMessage even when the household quota
+  # is exhausted.
+  models = ["chat", "long", "frontier", "claude-sonnet-max", "claude-opus-max", "embed", "rerank"]
 
 [memory]
 backend = "hybrid"
@@ -176,7 +183,14 @@ notify_on = ["P0", "P1"]
   [[cron.tasks]]
   name = "morning-briefing"
   schedule = "0 7 * * *"
-  model = "frontier"  # daily synthesis; reasoning quality matters
+  # Claude Sonnet via household Max. The morning briefing is the most
+  # user-visible Sancho output (lands in Leo's iMessage at 07:00) so
+  # it gets the paid model. Falls back via LiteLLM map (chat-thebeast →
+  # frontier-blade) if sancho's 6% slice of the household weekly Claude
+  # quota is exhausted. Everything else in this file keeps its existing
+  # `frontier` / default routing — Sancho only spends Claude on the
+  # most user-visible cron.
+  model = "claude-sonnet-max"
   prompt = """
   Generate the daily morning briefing for Leo.
   Read pages/world/calendar-context.md (refreshed at 06:00).

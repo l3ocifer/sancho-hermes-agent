@@ -23,14 +23,15 @@ fallbacks = []
   type = "openai_compatible"
   base_url = "http://litellm.inference.svc.cluster.local:4000/v1"
   api_key_env = "LITELLM_API_KEY"
-  # claude-sonnet-max routes through the household
+  # Claude Code Max aliases route through the household
   # claude-bridge service (homelab argocd/apps/_inference/55-claude-bridge.yaml).
-  # Sancho is tier-7 of seven (6% weekly share) — reserve for the
-  # morning briefing only; everything else stays on local models.
+  # Sancho is tier-7 of seven (6% weekly share). The scheduled morning
+  # briefing starts on Sonnet, but ad-hoc calls may choose any Claude
+  # Code model at call time via claude-code/<cli-model>.
   # On bridge 429, LiteLLM cascades sonnet→chat→frontier so cron always
   # delivers something to Leo's iMessage even when the household quota
   # is exhausted.
-  models = ["chat", "long", "frontier", "claude-sonnet-max", "embed", "rerank"]
+  models = ["chat", "long", "frontier", "claude-sonnet-max", "claude-opus-max", "claude-code/*", "embed", "rerank"]
 
 [memory]
 backend = "hybrid"

@@ -68,6 +68,19 @@ def _redact(text: str) -> str:
     return text
 
 
+def _agent_display_name() -> str:
+    return os.getenv("AGENT_NAME") or os.getenv("AGENT_ID", "Sancho").title()
+
+
+def _prefix_agent_name(text: str) -> str:
+    clean = (text or "").strip()
+    if not clean:
+        return clean
+    if re.match(r"^\s*\[[^\]]+\]\s+", clean):
+        return clean
+    return f"[{_agent_display_name()}] {clean}"
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -424,7 +437,7 @@ class BlueBubblesAdapter(BasePlatformAdapter):
         reply_to: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> SendResult:
-        text = self.format_message(content)
+        text = _prefix_agent_name(self.format_message(content))
         if not text:
             return SendResult(success=False, error="BlueBubbles send requires text")
         # Split on paragraph breaks first (double newlines) so each thought

@@ -28,8 +28,8 @@ jobs:
     steps:
       - name: Build image and push via skopeo
         env:
-          # Forgejo's workflow token can read the repo, but package writes use
-          # the leo-owned package PAT.
+          # The workflow token reads the repo; package writes use the shared
+          # leo-owned PAT from Forgejo Actions secrets.
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PACKAGE_TOKEN: ${{ secrets.FORGEJOPACKAGES }}
           # docker:27.5.1-cli reaches the dind sidecar via the bridge gateway.

@@ -26,6 +26,8 @@ jobs:
     runs-on: docker
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Build image and push via skopeo
         env:
           # Forgejo's workflow token does not include package write scope.
@@ -37,15 +39,13 @@ jobs:
           # Push over the cluster-internal Forgejo URL to avoid public-registry
           # chunked upload issues seen with Docker 27+.
           apk add --no-cache git skopeo
-          git clone --depth 1 --branch "${GITHUB_REF_NAME}" \
-            "http://leo:${TOKEN}@${REGISTRY_INTERNAL}/${GITHUB_REPOSITORY}.git" repo
           short_sha="$(printf '%s' "${GITHUB_SHA}" | cut -c1-7)"
 
           docker build \
             --tag "${REGISTRY_PUBLIC}/${IMAGE_NAME}:homelab" \
             --tag "${REGISTRY_PUBLIC}/${IMAGE_NAME}:${short_sha}" \
-            --file repo/homelab/Dockerfile \
-            repo
+            --file homelab/Dockerfile \
+            .
 
           for tag in homelab "${short_sha}"; do
             archive="/tmp/${IMAGE_NAME##*/}-${tag}.tar"

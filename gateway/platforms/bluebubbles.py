@@ -81,6 +81,11 @@ def _prefix_agent_name(text: str) -> str:
     return f"[{_agent_display_name()}] {clean}"
 
 
+def _agent_mention_pattern() -> re.Pattern[str]:
+    agent_id = re.escape((os.getenv("AGENT_ID") or "sancho").strip().lstrip("@"))
+    return re.compile(rf"(?<![\w@])@{agent_id}\b", re.IGNORECASE)
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -822,6 +827,11 @@ class BlueBubblesAdapter(BasePlatformAdapter):
                 return candidate.strip()
         return None
 
+    @staticmethod
+    def _is_addressed_to_agent(text: str) -> bool:
+        """Only wake Sancho from iMessage when explicitly mentioned."""
+        return bool(_agent_mention_pattern().search(text or ""))
+
     async def _handle_webhook(self, request):
         from aiohttp import web
 
@@ -882,6 +892,9 @@ class BlueBubblesAdapter(BasePlatformAdapter):
             )
             or ""
         )
+        if not self._is_addressed_to_agent(text):
+            logger.debug("[bluebubbles] ignoring unaddressed inbound message")
+            return web.Response(text="ok")
 
         # --- Inbound attachment handling ---
         attachments = record.get("attachments") or []

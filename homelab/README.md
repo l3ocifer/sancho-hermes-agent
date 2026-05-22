@@ -20,7 +20,8 @@ sancho-hermes-agent/                 ← repo root (this fork)
     ├── k8s/                          ← kustomize tree
     ├── config/                       ← SOUL.md, TOOLS.md, hermes.toml
     ├── shared/                       ← submodule → l3ocifer/homelab
-    ├── .github/workflows/
+    ├── ../.forgejo/workflows/        ← primary homelab image build
+    ├── ../.github/workflows/         ← backup CI + manual GHCR fallback
     ├── PATCHES.md, CHANGELOG.md, README.md
 ```
 

@@ -1,7 +1,21 @@
 """Tests for the BlueBubbles iMessage gateway adapter."""
+import asyncio
+import json
+
 import pytest
 
 from gateway.config import Platform, PlatformConfig
+
+
+class _WebhookRequest:
+    query = {"password": "secret"}
+    headers = {}
+
+    def __init__(self, payload):
+        self._payload = payload
+
+    async def read(self):
+        return json.dumps(self._payload).encode("utf-8")
 
 
 def _make_adapter(monkeypatch, **extra):
@@ -119,7 +133,7 @@ class TestBlueBubblesHelpers:
         result = await adapter.send("user@example.com", "first thought\n\nsecond thought")
 
         assert result.success is True
-        assert sent == ["first thought", "second thought"]
+        assert sent == ["[Sancho] first thought", "second thought"]
 
     def test_format_message_strips_markdown(self, monkeypatch):
         adapter = _make_adapter(monkeypatch)
@@ -291,6 +305,73 @@ class TestBlueBubblesWebhookParsing:
         payload = {"message": {"text": "hello"}}
         record = adapter._extract_payload_record(payload)
         assert record["text"] == "hello"
+
+    def test_requires_explicit_sancho_mention(self, monkeypatch):
+        adapter = _make_adapter(monkeypatch)
+
+        assert adapter._is_addressed_to_agent("@sancho please check this")
+        assert adapter._is_addressed_to_agent("Hey @Sancho, status?")
+        assert not adapter._is_addressed_to_agent("syncing notes across machines")
+        assert not adapter._is_addressed_to_agent("sancho please check this")
+        assert not adapter._is_addressed_to_agent("email leo@sancho.example")
+
+    @pytest.mark.asyncio
+    async def test_webhook_ignores_unaddressed_messages(self, monkeypatch):
+        adapter = _make_adapter(monkeypatch)
+        calls = []
+
+        async def fake_handle_message(event):
+            calls.append(event)
+
+        monkeypatch.setattr(adapter, "handle_message", fake_handle_message)
+
+        request = _WebhookRequest(
+            {
+                "type": "new-message",
+                "data": {
+                    "guid": "MESSAGE-GUID",
+                    "text": "syncing this thread across machines",
+                    "handle": {"address": "+15551234567"},
+                    "isFromMe": False,
+                    "chats": [{"guid": "any;-;+15551234567"}],
+                },
+            }
+        )
+
+        response = await adapter._handle_webhook(request)
+
+        assert response.status == 200
+        assert calls == []
+
+    @pytest.mark.asyncio
+    async def test_webhook_handles_explicit_sancho_mentions(self, monkeypatch):
+        adapter = _make_adapter(monkeypatch)
+        calls = []
+
+        async def fake_handle_message(event):
+            calls.append(event)
+
+        monkeypatch.setattr(adapter, "handle_message", fake_handle_message)
+
+        request = _WebhookRequest(
+            {
+                "type": "new-message",
+                "data": {
+                    "guid": "MESSAGE-GUID",
+                    "text": "@sancho please check this",
+                    "handle": {"address": "+15551234567"},
+                    "isFromMe": False,
+                    "chats": [{"guid": "any;-;+15551234567"}],
+                },
+            }
+        )
+
+        response = await adapter._handle_webhook(request)
+        await asyncio.sleep(0)
+
+        assert response.status == 200
+        assert len(calls) == 1
+        assert calls[0].text == "@sancho please check this"
 
 
 class TestBlueBubblesGuidResolution:

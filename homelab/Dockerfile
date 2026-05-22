@@ -8,8 +8,8 @@
 #
 # Build (from repo root):
 #   docker build -f homelab/Dockerfile \
-#     -t ghcr.io/l3ocifer/sancho-hermes-agent:latest \
-#     -t ghcr.io/l3ocifer/sancho-hermes-agent:$(git rev-parse --short HEAD) .
+#     -t git.leopaska.xyz/leo/sancho-hermes-agent:homelab \
+#     -t git.leopaska.xyz/leo/sancho-hermes-agent:$(git rev-parse --short HEAD) .
 
 # syntax=docker/dockerfile:1
 

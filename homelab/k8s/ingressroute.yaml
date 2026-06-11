@@ -19,19 +19,6 @@ spec:
   tls:
     certResolver: letsencrypt-prod
 
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: sancho-metrics
-  namespace: sancho
-  labels:
-    release: kube-prometheus-stack
-spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: sancho
-  endpoints:
-    - port: metrics
-      interval: 30s
-      path: /metrics
+# ServiceMonitor removed (homelab#47): Hermes has no Prometheus exporter —
+# the scrape target never came up and TargetDown fired forever. Re-add it
+# together with an exporter if/when hermes grows a /metrics endpoint.

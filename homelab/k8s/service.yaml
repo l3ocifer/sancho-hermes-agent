@@ -23,10 +23,6 @@ spec:
       port: 8443
       targetPort: api
       protocol: TCP
-    - name: metrics
-      port: 9100
-      targetPort: metrics
-      protocol: TCP
     - name: bbwh
       # BlueBubbles platform webhook (aiohttp app spun up by
       # gateway/platforms/bluebubbles.py — independent of the

@@ -114,7 +114,6 @@ spec:
           ports:
             - { name: gateway, containerPort: 3001, protocol: TCP }
             - { name: api,     containerPort: 3002, protocol: TCP }
-            - { name: metrics, containerPort: 9100, protocol: TCP }
             - { name: bbwh,    containerPort: 8645, protocol: TCP }
           livenessProbe:
             httpGet: { path: /health, port: gateway }

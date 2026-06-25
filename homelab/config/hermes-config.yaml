@@ -54,3 +54,19 @@ providers:
         # `frontier.model_info.max_input_tokens`. Already ≥64 K so no
         # Hermes-floor lie needed.
         context_length: 65536
+
+# ── Autonomous dispatch→write_file path (mission deliverables) ──────────
+# 2026-06-25: Root the agent's tool working dir at Sancho's Logseq graph so a
+# mission dispatched over the bus (BlueBubbles webhook → gateway turn) that
+# calls write_file('world/<deliverable>.md', …) lands the file on the graph
+# PVC at /data/graphs/sancho/pages/world/<deliverable>.md — the path the
+# mission-orchestrator verifies (os.path.isfile + size>0). Hermes analog of the
+# IronClaw workingDir fix: write_file already targets the real pod FS
+# (backend=local), but TERMINAL_CWD defaulted to /home/hermes. hermes.toml is
+# vestigial (gateway reads only this config.yaml). Approval mode is left at the
+# default (manual): write_file is not approval-gated, and Sancho reaches
+# external comms (email/iMessage), so the KILLSWITCH always-confirm posture on
+# outbound actions must NOT be weakened.
+terminal:
+  backend: local
+  cwd: /data/graphs/sancho/pages

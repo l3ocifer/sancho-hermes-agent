@@ -120,14 +120,16 @@ enabled = true
     "search_memory", "create_memory",
   ]
 
-  # Real Home Assistant control/read via HA's first-party mcp_server
-  # (Assist LLM API: turn devices on/off, query state, run scenes).
-  # Fronted by the in-cluster nginx proxy that injects the HA token, so no
-  # credentials are needed here (token-at-edge, like the other federated
-  # servers). See homelab/argocd/apps/_mcp/50-home-assistant-mcp.yaml.
+  # Central MCP gateway (ContextForge) — ONE endpoint merging every shared
+  # backend: Home Assistant control (Assist), k8s read-only, grafana,
+  # forgejo, postgres read-only. Add/update a server centrally in
+  # homelab/argocd/apps/_mcp/70-mcp-gateway.yaml and Sancho gets it with no
+  # config change. No credentials here (the gateway injects them at the
+  # edge). homelab-devops above is kept only for its unique weather/places/
+  # memory tools.
   [[mcp.servers]]
-  name = "home-assistant"
-  url = "http://home-assistant-mcp.mcp.svc.cluster.local:8080/mcp_server/sse"
+  name = "gateway"
+  url = "http://mcp-gateway.mcp.svc.cluster.local:8080/sse"
   transport = "sse"
   allowed_tools = ["*"]
 

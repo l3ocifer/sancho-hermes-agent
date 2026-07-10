@@ -28,6 +28,7 @@ configMapGenerator:
     files:
       - config.yaml=../config/hermes-config.yaml
       - config.toml=../config/hermes.toml
+      - himalaya.toml=../config/himalaya-config.toml
 
 generatorOptions:
   disableNameSuffixHash: true

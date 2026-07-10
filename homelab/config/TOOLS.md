@@ -72,7 +72,7 @@ The Hermes pod mounts `unified-ai-configs/skills/` and loads:
 | Skill                             | Use case                                                                                                                                                                                                                                                                      |
 | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `imsg`                            | iMessage read/list — but **send** goes through BlueBubbles proxy, not via the local `imsg` CLI which doesn't exist in the pod                                                                                                                                                 |
-| `himalaya`                        | Email read/draft across all configured accounts (config in sealed `sancho-himalaya-config`)                                                                                                                                                                                   |
+| `himalaya`                        | Email read/draft/send across Leo's sovereign Stalwart mailboxes. Config is mounted at `~/.config/himalaya/config.toml` from the `sancho-hermes-config` ConfigMap; passwords come from sealed env (`STALWART_LEO_PASSWORD`, `STALWART_SANCHO_PASSWORD`). Default account is `leo`. E.g. `himalaya envelope list -a leo`, `himalaya message read <id> -a leo`.                                                                                                     |
 | `1password` (Vaultwarden adapter) | `bw get item`, `bw list items` — read-only against `https://warden.leopaska.xyz`. Session is unlocked at pod start with `BW_CLIENTID`/`BW_CLIENTSECRET` (sealed) and re-locks on idle. The skill name is historical — the implementation talks to Vaultwarden, not 1Password. |
 | `obsidian`                        | Cross-graph reads (Logseq is markdown, the obsidian skill works for both)                                                                                                                                                                                                     |
 | `weather`                         | Daily forecast in morning briefing                                                                                                                                                                                                                                            |
@@ -82,6 +82,37 @@ The Hermes pod mounts `unified-ai-configs/skills/` and loads:
 | `commit-helper`                   | If Leo dictates a commit message in conversation                                                                                                                                                                                                                              |
 | `session-logs`                    | Cross-session search of Sancho's own past conversations                                                                                                                                                                                                                       |
 
+
+## Calendar (CalDAV → Stalwart)
+
+Leo's calendar is served by the sovereign Stalwart CalDAV endpoint. There is
+no dedicated calendar tool — read it with `terminal` + `curl` using the sealed
+env vars `CALDAV_URL`, `CALDAV_USERNAME`, `CALDAV_PASSWORD` (injected from
+`sancho-secrets`). `CALDAV_URL` already points at Leo's calendar-home
+collection (`https://dav.leopaska.xyz/dav/cal/leo@leopaska.xyz/`).
+
+The `calendar-refresh` cron (06:00) pulls the next 24h and writes
+`pages/world/calendar-context.md`. Canonical fetch (report VEVENTs in a
+time range):
+
+```bash
+NOW=$(date -u +%Y%m%dT%H%M%SZ); END=$(date -u -d '+24 hours' +%Y%m%dT%H%M%SZ)
+curl -s -u "$CALDAV_USERNAME:$CALDAV_PASSWORD" -X REPORT -H "Depth: 1" \
+  -H "Content-Type: application/xml" "$CALDAV_URL" --data @- <<XML
+<c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
+  <d:prop><d:getetag/><c:calendar-data/></d:prop>
+  <c:filter><c:comp-filter name="VCALENDAR">
+    <c:comp-filter name="VEVENT">
+      <c:time-range start="$NOW" end="$END"/>
+    </c:comp-filter>
+  </c:comp-filter></c:filter>
+</c:calendar-query>
+XML
+```
+
+Parse the returned VEVENT blocks (SUMMARY / DTSTART / DTEND / LOCATION) into
+the briefing. As Leo connects his devices (Mac/iPhone) to
+`dav.leopaska.xyz`, their events flow into this same collection.
 
 ## Web Search
 

@@ -143,9 +143,10 @@ spec:
             - { name: persona,        mountPath: /home/hermes/.hermes/workspace, readOnly: true }
             - { name: hermes-config,  mountPath: /home/hermes/.hermes/config.yaml, subPath: config.yaml, readOnly: true }
             - { name: hermes-config,  mountPath: /home/hermes/.hermes/config.toml, subPath: config.toml, readOnly: true }
-            # Himalaya email config — HOME=/opt/data, so this is himalaya's
-            # default config path. Non-secret (passwords via env auth.cmd).
-            - { name: hermes-config,  mountPath: /opt/data/.config/himalaya/config.toml, subPath: himalaya.toml, readOnly: true }
+            # Himalaya email config — HOME=/home/hermes in the homelab image,
+            # so this is himalaya's default config path. Non-secret (passwords
+            # via env auth.cmd).
+            - { name: hermes-config,  mountPath: /home/hermes/.config/himalaya/config.toml, subPath: himalaya.toml, readOnly: true }
             - { name: graph-sancho,   mountPath: /data/graphs/sancho }
             - { name: graph-frick,    mountPath: /data/graphs/frick,    readOnly: true }
             - { name: graph-frack,    mountPath: /data/graphs/frack,    readOnly: true }

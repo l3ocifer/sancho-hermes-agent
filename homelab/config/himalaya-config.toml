@@ -1,7 +1,8 @@
 # Sancho — Himalaya email configuration (sovereign in-cluster Stalwart).
 #
-# Mounted read-only at /opt/data/.config/himalaya/config.toml (HOME=/opt/data)
-# from the `sancho-hermes-config` ConfigMap. Carries NO secrets: every
+# Mounted read-only at /home/hermes/.config/himalaya/config.toml
+# (HOME=/home/hermes) from the `sancho-hermes-config` ConfigMap. Carries
+# NO secrets: every
 # password is read at call time from the sealed `sancho-secrets` env via
 # `auth.cmd = "printenv <VAR>"`.
 #

@@ -1,0 +1,53 @@
+# Sancho — Himalaya email configuration (sovereign in-cluster Stalwart).
+#
+# Mounted read-only at /opt/data/.config/himalaya/config.toml (HOME=/opt/data)
+# from the `sancho-hermes-config` ConfigMap. Carries NO secrets: every
+# password is read at call time from the sealed `sancho-secrets` env via
+# `auth.cmd = "printenv <VAR>"`.
+#
+# Hosts point at `mail.leopaska.xyz` — resolved in-cluster to the Stalwart
+# Service ClusterIP by the hostAliases entry in deployment.yaml. Using the
+# public name (not the .svc name) keeps the presented `stalwart-tls`
+# certificate SAN valid for implicit-TLS IMAP (993) / submissions (465),
+# so no cert-verification bypass is needed.
+#
+# Two accounts:
+#   leo    — Leo's primary mailbox (default; what inbox-triage / briefing read)
+#   sancho — Sancho's own agent mailbox (notifications, CC lane)
+
+[accounts.leo]
+email = "leo@leopaska.xyz"
+display-name = "Leo (via Sancho)"
+default = true
+backend.type = "imap"
+backend.host = "mail.leopaska.xyz"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "leo@leopaska.xyz"
+backend.auth.type = "password"
+backend.auth.cmd = "printenv STALWART_LEO_PASSWORD"
+message.send.backend.type = "smtp"
+message.send.backend.host = "mail.leopaska.xyz"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "leo@leopaska.xyz"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "printenv STALWART_LEO_PASSWORD"
+
+[accounts.sancho]
+email = "sancho@leopaska.xyz"
+display-name = "Sancho"
+backend.type = "imap"
+backend.host = "mail.leopaska.xyz"
+backend.port = 993
+backend.encryption.type = "tls"
+backend.login = "sancho@leopaska.xyz"
+backend.auth.type = "password"
+backend.auth.cmd = "printenv STALWART_SANCHO_PASSWORD"
+message.send.backend.type = "smtp"
+message.send.backend.host = "mail.leopaska.xyz"
+message.send.backend.port = 465
+message.send.backend.encryption.type = "tls"
+message.send.backend.login = "sancho@leopaska.xyz"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.cmd = "printenv STALWART_SANCHO_PASSWORD"

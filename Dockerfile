@@ -88,6 +88,30 @@ RUN set -eu; \
     # ENTRYPOINT. Safe to drop once the affected catalogs are updated.\
     ln -sf /init /usr/bin/tini
 
+# ---------- himalaya (email CLI for the `himalaya` skill) ----------
+# Sancho's PA email lane (inbox-triage / morning-briefing cron) operates a
+# mailbox through the `himalaya` skill, which requires the himalaya binary on
+# PATH. It is not packaged in Debian, so install the pinned upstream release,
+# arch-keyed like s6-overlay above, with SHA256 verification (supply-chain
+# policy). To bump: download himalaya.<arch>-linux.tgz for the new tag and
+# refresh the two SHAs.
+ARG HIMALAYA_VERSION=1.1.0
+ARG HIMALAYA_X86_64_SHA256=9b18796d2da11c01847ebea1943ea464352dd019814d2318e1819c5e99c54063
+ARG HIMALAYA_AARCH64_SHA256=e11d5e10ba7cd40843a13882b3f131b4b2a1538a9b8cdf5474c4d3e3b75d870e
+RUN set -eu; \
+    case "${TARGETARCH:-amd64}" in \
+        amd64) h_arch="x86_64-linux";  h_sha="${HIMALAYA_X86_64_SHA256}" ;; \
+        arm64) h_arch="aarch64-linux"; h_sha="${HIMALAYA_AARCH64_SHA256}" ;; \
+        *) echo "Unsupported TARGETARCH=${TARGETARCH} for himalaya" >&2; exit 1 ;; \
+    esac; \
+    curl -fsSL --retry 3 -o /tmp/himalaya.tgz \
+        "https://github.com/pimalaya/himalaya/releases/download/v${HIMALAYA_VERSION}/himalaya.${h_arch}.tgz"; \
+    printf '%s  %s\n' "${h_sha}" /tmp/himalaya.tgz | sha256sum -c; \
+    tar -C /usr/local/bin -xzf /tmp/himalaya.tgz himalaya; \
+    chmod 0755 /usr/local/bin/himalaya; \
+    rm /tmp/himalaya.tgz; \
+    /usr/local/bin/himalaya --version
+
 # Non-root user for runtime; UID can be overridden via HERMES_UID at runtime
 RUN useradd -u 10000 -m -d /opt/data hermes
 

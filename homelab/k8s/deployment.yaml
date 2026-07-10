@@ -23,6 +23,16 @@ spec:
     spec:
       serviceAccountName: sancho-ops
       restartPolicy: Always
+      # Sovereign mail/CalDAV lane: resolve the public mail hostname to the
+      # in-cluster Stalwart Service ClusterIP so himalaya's implicit-TLS
+      # IMAP/SMTP (and any mx.* SNI) validate against the stalwart-tls cert
+      # (SANs: dav/mail/mx.leopaska.xyz) without a verification bypass.
+      # ClusterIP is stable for the life of the Service; if Stalwart's
+      # Service is recreated, refresh this IP (kubectl -n communication get
+      # svc stalwart).
+      hostAliases:
+        - ip: "10.43.112.113"
+          hostnames: ["mail.leopaska.xyz", "mx.leopaska.xyz"]
       affinity:
         # Float across the cluster — no hard pinning. Soft-prefer
         # `alef` (matches Frick co-location for low-latency model
@@ -133,6 +143,9 @@ spec:
             - { name: persona,        mountPath: /home/hermes/.hermes/workspace, readOnly: true }
             - { name: hermes-config,  mountPath: /home/hermes/.hermes/config.yaml, subPath: config.yaml, readOnly: true }
             - { name: hermes-config,  mountPath: /home/hermes/.hermes/config.toml, subPath: config.toml, readOnly: true }
+            # Himalaya email config — HOME=/opt/data, so this is himalaya's
+            # default config path. Non-secret (passwords via env auth.cmd).
+            - { name: hermes-config,  mountPath: /opt/data/.config/himalaya/config.toml, subPath: himalaya.toml, readOnly: true }
             - { name: graph-sancho,   mountPath: /data/graphs/sancho }
             - { name: graph-frick,    mountPath: /data/graphs/frick,    readOnly: true }
             - { name: graph-frack,    mountPath: /data/graphs/frack,    readOnly: true }

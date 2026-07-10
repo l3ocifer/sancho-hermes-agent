@@ -88,8 +88,9 @@ The Hermes pod mounts `unified-ai-configs/skills/` and loads:
 Leo's calendar is served by the sovereign Stalwart CalDAV endpoint. There is
 no dedicated calendar tool — read it with `terminal` + `curl` using the sealed
 env vars `CALDAV_URL`, `CALDAV_USERNAME`, `CALDAV_PASSWORD` (injected from
-`sancho-secrets`). `CALDAV_URL` already points at Leo's calendar-home
-collection (`https://dav.leopaska.xyz/dav/cal/leo@leopaska.xyz/`).
+`sancho-secrets`). `CALDAV_URL` points at Leo's default calendar collection
+(`https://dav.leopaska.xyz/dav/cal/leo@leopaska.xyz/default/`), so a
+`calendar-query` REPORT can be issued against it directly.
 
 The `calendar-refresh` cron (06:00) pulls the next 24h and writes
 `pages/world/calendar-context.md`. Canonical fetch (report VEVENTs in a

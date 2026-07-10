@@ -20,6 +20,12 @@
 email = "leo@leopaska.xyz"
 display-name = "Leo (via Sancho)"
 default = true
+# Stalwart's special-use folder names differ from himalaya's defaults;
+# without these, save-to-Sent fails after SMTP delivery succeeds.
+folder.aliases.inbox = "INBOX"
+folder.aliases.sent = "Sent Items"
+folder.aliases.drafts = "Drafts"
+folder.aliases.trash = "Deleted Items"
 backend.type = "imap"
 backend.host = "mail.leopaska.xyz"
 backend.port = 993
@@ -38,6 +44,10 @@ message.send.backend.auth.cmd = "printenv STALWART_LEO_PASSWORD"
 [accounts.sancho]
 email = "sancho@leopaska.xyz"
 display-name = "Sancho"
+folder.aliases.inbox = "INBOX"
+folder.aliases.sent = "Sent Items"
+folder.aliases.drafts = "Drafts"
+folder.aliases.trash = "Deleted Items"
 backend.type = "imap"
 backend.host = "mail.leopaska.xyz"
 backend.port = 993

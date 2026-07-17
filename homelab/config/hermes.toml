@@ -22,7 +22,11 @@ fallbacks = []
   [models.providers.litellm]
   type = "openai_compatible"
   base_url = "http://litellm.inference.svc.cluster.local:4000/v1"
-  api_key_env = "LITELLM_API_KEY"
+  # `key_env` is the canonical Hermes field; the 2026-07-12 upstream
+  # provider-boundary change (#63048) resolves named providers through a
+  # path that ignores the older `api_key_env` spelling, which caused
+  # every cron LLM call to hit LiteLLM as "no-key-required" → 401.
+  key_env = "LITELLM_API_KEY"
   # Claude Code Max aliases route through the household
   # claude-bridge service (homelab argocd/apps/_inference/55-claude-bridge.yaml).
   # Sancho is tier-7 of seven (6% weekly share). The scheduled morning

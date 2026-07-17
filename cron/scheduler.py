@@ -3676,9 +3676,17 @@ def run_one_job(job: dict, *, adapters=None, loop=None, verbose: bool = False) -
             set_secret_scope,
         )
 
-        _scope_token = set_secret_scope(
-            build_profile_secret_scope(_get_hermes_home())
-        )
+        # An installed scope is authoritative — get_secret() never falls back
+        # to os.environ. In containerized deploys there is no <home>/.env
+        # (credentials arrive as process env via the pod spec), so the built
+        # mapping is EMPTY; installing it would blank every credential read
+        # for the whole cron run (LITELLM_API_KEY -> "" -> "no-key-required"
+        # -> 401 on every job). Install the scope only when the profile
+        # actually has .env secrets; otherwise keep the legacy unscoped path
+        # (multiplex-inactive get_secret reads os.environ, and the
+        # multiplex-active fail-closed guard still applies).
+        _scope_map = build_profile_secret_scope(_get_hermes_home())
+        _scope_token = set_secret_scope(_scope_map or None)
         # Defer the cron agent's async-resource teardown until AFTER delivery.
         # run_job normally closes the agent (and reaps stale async clients) in
         # its finally block; doing that before _deliver_result runs means the

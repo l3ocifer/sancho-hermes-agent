@@ -119,6 +119,10 @@ data:
                     "prompt": (raw.get("prompt") or "").strip(),
                     "deliver": ",".join(raw.get("delivery", []) or []) or "local",
                     "skills": raw.get("skills") or [],
+                    # Per-task model pin (None → gateway default). Was silently
+                    # dropped before 2026-07-17, so toml model pins never took
+                    # effect and every cron ran on the default 24K chat model.
+                    "model": raw.get("model"),
                     "origin": ORIGIN_TAG,
                 }
             )
@@ -130,7 +134,7 @@ data:
     def _diff(desired: dict[str, Any], existing: dict[str, Any]) -> dict[str, Any]:
         # Compare only the fields we manage; ignore runtime-only state
         # (last_run_at, next_run_at, etc.).
-        managed = ("schedule", "prompt", "deliver", "skills")
+        managed = ("schedule", "prompt", "deliver", "skills", "model")
         patch: dict[str, Any] = {}
         for key in managed:
             new_val = desired.get(key)

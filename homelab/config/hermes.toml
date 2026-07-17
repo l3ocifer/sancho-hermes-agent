@@ -257,7 +257,9 @@ notify_on = ["P0", "P1"]
   [[cron.tasks]]
   name = "inbox-triage"
   schedule = "30 6 * * *"
-  model = "frontier"  # drafts customer-facing replies; quality matters
+  # 2026-07-17: frontier → long (frontier backend parked; long benches
+  # higher quality anyway and fits full-inbox context).
+  model = "long"  # drafts customer-facing replies; quality matters
   prompt = "Triage overnight inbox. Tag P0/P1/P2. Draft replies for high-priority items (drafts only, no send)."
   delivery = []
 

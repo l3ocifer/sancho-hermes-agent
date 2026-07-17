@@ -223,7 +223,12 @@ notify_on = ["P0", "P1"]
   [[cron.tasks]]
   name = "evening-recap"
   schedule = "0 18 * * *"
-  model = "frontier"  # daily synthesis
+  # 2026-07-17: frontier → long. llamacpp-blade-frontier is parked
+  # (0 replicas); LiteLLM's fallback landed these on chat (24K ctx) and
+  # the >20K recap prompt hit ContextWindowExceeded daily. Quirm's bench
+  # ranks long (262K ctx, quality 0.928) above frontier (0.808) anyway —
+  # see quirm/pages/world/inference-optimization.md.
+  model = "long"  # daily synthesis
   prompt = """
   Generate the evening recap.
   Today's completed calendar items, what got done, what's open.
@@ -235,7 +240,10 @@ notify_on = ["P0", "P1"]
   [[cron.tasks]]
   name = "memory-consolidate"
   schedule = "50 3 * * *"  # 03:50 — staggered behind Frick (03:00) and Frack (03:30)
-  model = "frontier"  # deep nightly distillation; quality > latency
+  # 2026-07-17: frontier → long (same reason as evening-recap: frontier
+  # backend parked, chat fallback overflows 24K on journal-sized prompts;
+  # long's 262K window fits and benches higher quality than frontier).
+  model = "long"  # deep nightly distillation; quality > latency
   prompt = "Run memory consolidation on yesterday's journal. Distill to pages/ai-memory/Sancho/decisions.md."
   delivery = []  # silent
 

@@ -11,7 +11,9 @@ on:
       - "agent/**"
       - "acp_adapter/**"
       - "acp_registry/**"
+      - "cron/**"
       - "gateway/**"
+      - "hermes_cli/**"
       - "tools/**"
       - ".forgejo/workflows/homelab-build.yml"
   workflow_dispatch: {}

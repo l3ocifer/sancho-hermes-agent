@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:0.11.6-python3.13-trixie@sha256:b3c543b6c4f23a5f2df22866bd7857e5d304b67a564f4feab6ac22044dde719b AS uv_source
+FROM ghcr.io/astral-sh/uv:0.11.32-python3.13-trixie@sha256:656194585e22cf53cab0bedd2c2d9158428220a33255f3bfe668e124d4f2fe6f AS uv_source
 # Node 22 LTS source stage. Debian trixie's bundled nodejs is pinned to 20.x
 # which reached EOL in April 2026 — we copy node + npm + corepack from the
 # upstream node:22 image instead so we can stay on a supported LTS without
@@ -6,8 +6,8 @@ FROM ghcr.io/astral-sh/uv:0.11.6-python3.13-trixie@sha256:b3c543b6c4f23a5f2df228
 # so the produced binary links against glibc 2.36, which runs cleanly on
 # our Debian 13 (trixie, glibc 2.41) runtime.  Bumping to a new Node major
 # is a one-line ARG change; see #4977.
-FROM node:22-bookworm-slim@sha256:7af03b14a13c8cdd38e45058fd957bf00a72bbe17feac43b1c15a689c029c732 AS node_source
-FROM debian:13.4
+FROM node:22.23.1-bookworm-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3 AS node_source
+FROM debian:13.6
 
 # Disable Python stdout buffering to ensure logs are printed immediately.
 # Do not write .pyc files at runtime: /opt/hermes is immutable in the

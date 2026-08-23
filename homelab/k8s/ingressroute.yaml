@@ -3,21 +3,22 @@ apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: sancho
-  namespace: sancho
+  namespace: agents-shared
 spec:
-  entryPoints: [websecure]
+  # Cloudflare terminates TLS and the tunnel speaks plain HTTP to Traefik's
+  # `web` entrypoint; a websecure-only router, a `tls:` block (TLS-only
+  # routers on every entrypoint) or a cross-namespace middleware ref
+  # (allowCrossNamespace is off) each make Traefik drop the router -> 404.
+  entryPoints: [web]
   routes:
     - match: Host(`sancho.leopaska.xyz`)
       kind: Rule
       services:
         - name: sancho
-          namespace: sancho
+          namespace: agents-shared
           port: 3001
       middlewares:
-        - name: authelia
-          namespace: security
-  tls:
-    certResolver: letsencrypt-prod
+        - name: authelia   # agents-shared copy, homelab infrastructure/authelia-middleware.yaml
 
 # ServiceMonitor removed (homelab#47): Hermes has no Prometheus exporter —
 # the scrape target never came up and TargetDown fired forever. Re-add it

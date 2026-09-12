@@ -14,8 +14,11 @@ handoff_file = "/home/hermes/.hermes/workspace/HANDOFF.md"
 
 [models]
 # Fleet default is `chat` (vllm-chat / Qwen3.5 27B AWQ on thebeast).
-# `long` and `frontier` are opt-in per-task; do not auto-fallback to
+# `long` and `agent-quality` are opt-in per-task; do not auto-fallback to
 # `long` because a wedged long backend can hang normal agent work.
+# 2026-09-12 paradigm: `frontier` renamed to `agent-quality` (GLM-5.3 via
+# LiteLLM) below -- `frontier` is no longer in this agent's LiteLLM key
+# allowlist; SOTA/frontier subscriptions now orchestrate only.
 default = "litellm/chat"
 fallbacks = []
 
@@ -32,10 +35,10 @@ fallbacks = []
   # Sancho is tier-7 of seven (6% weekly share). The scheduled morning
   # briefing starts on Sonnet, but ad-hoc calls may choose any Claude
   # Code model at call time via claude-code/<cli-model>.
-  # On bridge 429, LiteLLM cascades sonnet→chat→frontier so cron always
-  # delivers something to Leo's iMessage even when the household quota
-  # is exhausted.
-  models = ["chat", "long", "frontier", "claude-sonnet-max", "claude-opus-max", "claude-code/*", "embed", "rerank"]
+  # On bridge 429, LiteLLM cascades sonnet→chat→agent-quality so cron
+  # always delivers something to Leo's iMessage even when the household
+  # quota is exhausted.
+  models = ["chat", "long", "agent-quality", "claude-sonnet-max", "claude-opus-max", "claude-code/*", "embed", "rerank"]
 
 [memory]
 backend = "hybrid"
@@ -195,11 +198,12 @@ notify_on = ["P0", "P1"]
 # which calls Hermes' /api/jobs HTTP API on each ArgoCD sync.
 #
 # Per-task `model` field (optional):
-#   - omit / null   → use the gateway default (long)
-#   - "frontier"    → llamacpp-blade-frontier (slow, deepest reasoning)
-#   - "long"        → vllm-long (262K window, mid quality)
-#   - "chat"        → vllm-chat (fast, 20K window)
-# Pin "frontier" only on tasks where reasoning quality matters more
+#   - omit / null    → use the gateway default (long)
+#   - "agent-quality" → CheaperInference GLM-5.3 via LiteLLM (was "frontier";
+#                        slower/pricier, deepest reasoning, thinking on)
+#   - "long"         → vllm-long (262K window, mid quality)
+#   - "chat"         → vllm-chat (fast, 20K window)
+# Pin "agent-quality" only on tasks where reasoning quality matters more
 # than latency AND the prompt+context fit in 64K tokens.
 
   [[cron.tasks]]

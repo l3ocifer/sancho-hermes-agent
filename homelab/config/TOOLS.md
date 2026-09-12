@@ -26,11 +26,18 @@ IngressRoute, Authelia in front
 | `litellm/chat`     | Default. Day-to-day conversation.                                             | `https://llm.leopaska.xyz/v1` (key in `LITELLM_API_KEY`)    |
 | `litellm/long`     | When context > 64k tokens (briefings that summarize a week of activity, etc.) | same                                                        |
 | `litellm/code`     | Rare — only if Leo asks for a code review/draft and Frack isn't around        | same                                                        |
-| `litellm/frontier` | Opt-in for high-stakes daily synthesis (pin in `hermes.toml`)                 | same — Qwen3-Coder 480B MoE on blade (CPU-only, ~3-5 tok/s) |
+| `litellm/agent-quality` | Opt-in for high-stakes daily synthesis (pin in `hermes.toml`, was `frontier`) | same — CheaperInference GLM-5.3, thinking on |
 
 
 Set in `hermes.toml` under `[models]`. Switch interactively with
 `hermes model`.
+
+2026-09-12 paradigm: this agent's LiteLLM key is scoped to exactly
+`chat`, `agent`, `agent-fast`, `agent-quality`, `aux`, `long`, `code`,
+`embed`, `rerank`, `transcribe`. `frontier`, `auto`, `codex-*`,
+`gpt-5.5`, and direct Claude/OpenAI API keys are no longer available
+to agents -- those subscriptions now orchestrate only, not agent
+fallbacks.
 
 ## Channels
 
